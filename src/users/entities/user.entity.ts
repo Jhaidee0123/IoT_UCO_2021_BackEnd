@@ -15,6 +15,9 @@ export class User {
   @Column({ default: true })
   public isActive: boolean;
 
+  @Column({ nullable: true })
+  public vaultName: string;
+  
   @Column({ unique: true })
   public email: string;
 

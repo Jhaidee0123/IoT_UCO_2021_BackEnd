@@ -2,6 +2,7 @@ import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { CreateUserDto } from '../dto';
+import { UpdateUserDto, UserDto } from '../dto/user.dto';
 import { User } from '../entities';
 
 @Injectable()
@@ -34,7 +35,17 @@ export class UsersService {
     await this.userRepository.save(newUser);
   }
 
-  public async remove(id: string): Promise<void> {
-    await this.userRepository.delete(id);
+  public async updateOrDeactivate(user: UserDto): Promise<void> {
+    const email = user.email;
+    const userToUpdate = await this.userRepository.findOne({ email });
+    console.log(userToUpdate);
+    if (userToUpdate) {
+      userToUpdate.email = user.email
+      userToUpdate.isActive = false;
+      userToUpdate.password = user.password;
+      userToUpdate.firstName = user.firstName;
+      userToUpdate.lastName = user.lastName;
+      await this.userRepository.save(user);
+    }
   }
 }

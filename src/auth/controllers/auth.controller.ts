@@ -4,7 +4,7 @@ import {
   UseGuards,
   Request,
   Body,
-  Get,
+  Get
 } from '@nestjs/common';
 import { UserRole } from 'src/users/entities/user-role.enum';
 import { RegisterDto } from '../dto';
