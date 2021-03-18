@@ -7,8 +7,10 @@ import {
   Get
 } from '@nestjs/common';
 import { UserRole } from 'src/users/entities/user-role.enum';
+import { Roles } from '../decorators/role.decorator';
 import { RegisterDto } from '../dto';
 import { JwtAuthGuard, LocalAuthGuard } from '../guards';
+import { RoleGuard } from '../guards/role.guard';
 import { AuthService } from '../services';
 
 @Controller('auth')
@@ -21,7 +23,10 @@ export class AuthController {
     return this.authService.login(req.user);
   }
 
+  
   @Post('register-power-user')
+  @Roles('0')
+  @UseGuards(JwtAuthGuard, RoleGuard)
   public async registerPowerUser(@Body() registrationData: RegisterDto) {
     return this.authService.register({
       ...registrationData,
@@ -30,6 +35,8 @@ export class AuthController {
   }
 
   @Post('register-manager')
+  @Roles('0')
+  @UseGuards(JwtAuthGuard, RoleGuard)
   public async registerManager(@Body() registrationData: RegisterDto) {
     return this.authService.register({
       ...registrationData,
@@ -38,6 +45,8 @@ export class AuthController {
   }
 
   @Post('register-user')
+  @Roles('1')
+  @UseGuards(JwtAuthGuard, RoleGuard)
   public async registerUser(@Body() registrationData: RegisterDto) {
     return this.authService.register({
       ...registrationData,
@@ -46,6 +55,8 @@ export class AuthController {
   }
 
   @Post('register-watchman')
+  @Roles('1')
+  @UseGuards(JwtAuthGuard, RoleGuard)
   public async registerWatchman(@Body() registrationData: RegisterDto) {
     return this.authService.register({
       ...registrationData,
