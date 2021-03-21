@@ -1,6 +1,6 @@
 export enum UserRole {
-  PowerUser,
-  Manager,
-  User,
-  Watchman
+  PowerUser = 'POWER_USER',
+  Manager = 'MANAGER',
+  User = 'USER',
+  Watchman = 'WATCHMAN'
 }

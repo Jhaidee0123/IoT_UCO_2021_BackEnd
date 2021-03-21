@@ -5,11 +5,15 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { AuthModule } from './auth/auth.module';
 import { UsersModule } from './users/users.module';
+import { AppointmentController } from './appointment/controller/appointment.controller';
+import { Appointment } from './appointment/entities/appointment.entity';
+import { AppointmentModule } from './appointment/appointment.module';
 
 @Module({
   imports: [
     AuthModule,
     UsersModule,
+    AppointmentModule,
     TypeOrmModule.forRoot({
       type: 'postgres',
       host: process.env.DATABASE_HOST || 'localhost',
@@ -20,9 +24,9 @@ import { UsersModule } from './users/users.module';
       synchronize: true,
       entities: ['dist/**/*.entity.{js,ts}'],
       logging: true,
-    }),
+    })
   ],
-  controllers: [AppController],
+  controllers: [AppController, AppointmentController],
   providers: [AppService],
 })
 export class AppModule {

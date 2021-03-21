@@ -1,4 +1,5 @@
-import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import { Appointment } from 'src/appointment/entities/appointment.entity';
+import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
 import { UserRole } from './user-role.enum';
 
 @Entity()
@@ -23,6 +24,12 @@ export class User {
 
   @Column()
   public password: string;
+
+  @Column({ nullable: true })
+  public pin: number;
+
+  @OneToMany(() => Appointment, appointment => appointment.user)
+  public appointments: Appointment[];
 
   @Column({
     type: 'enum',

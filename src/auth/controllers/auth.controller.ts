@@ -4,7 +4,8 @@ import {
   UseGuards,
   Request,
   Body,
-  Get
+  Get,
+  ValidationPipe
 } from '@nestjs/common';
 import { UserRole } from 'src/users/entities/user-role.enum';
 import { Roles } from '../decorators/role.decorator';
@@ -23,11 +24,10 @@ export class AuthController {
     return this.authService.login(req.user);
   }
 
-  
   @Post('register-power-user')
-  @Roles('0')
-  @UseGuards(JwtAuthGuard, RoleGuard)
-  public async registerPowerUser(@Body() registrationData: RegisterDto) {
+  /* @Roles(UserRole.PowerUser.toString())
+  @UseGuards(JwtAuthGuard, RoleGuard) */
+  public async registerPowerUser(@Body(new ValidationPipe()) registrationData: RegisterDto) {
     return this.authService.register({
       ...registrationData,
       role: UserRole.PowerUser,
@@ -35,9 +35,9 @@ export class AuthController {
   }
 
   @Post('register-manager')
-  @Roles('0')
+  @Roles(UserRole.PowerUser.toString())
   @UseGuards(JwtAuthGuard, RoleGuard)
-  public async registerManager(@Body() registrationData: RegisterDto) {
+  public async registerManager(@Body(new ValidationPipe()) registrationData: RegisterDto) {
     return this.authService.register({
       ...registrationData,
       role: UserRole.Manager,
@@ -45,9 +45,9 @@ export class AuthController {
   }
 
   @Post('register-user')
-  @Roles('1')
+  @Roles(UserRole.Manager.toString())
   @UseGuards(JwtAuthGuard, RoleGuard)
-  public async registerUser(@Body() registrationData: RegisterDto) {
+  public async registerUser(@Body(new ValidationPipe()) registrationData: RegisterDto) {
     return this.authService.register({
       ...registrationData,
       role: UserRole.User,
@@ -55,9 +55,9 @@ export class AuthController {
   }
 
   @Post('register-watchman')
-  @Roles('1')
+  @Roles(UserRole.Manager.toString())
   @UseGuards(JwtAuthGuard, RoleGuard)
-  public async registerWatchman(@Body() registrationData: RegisterDto) {
+  public async registerWatchman(@Body(new ValidationPipe()) registrationData: RegisterDto) {
     return this.authService.register({
       ...registrationData,
       role: UserRole.Watchman,

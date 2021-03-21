@@ -2,7 +2,7 @@ import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { hash } from 'bcrypt';
 import { Repository } from 'typeorm';
-import { CreateUserDto, UpdateUserDto } from '../dto';
+import { CreateUserDto, UpdatePinDto, UpdateUserDto } from '../dto';
 import { User } from '../entities';
 
 @Injectable()
@@ -47,5 +47,12 @@ export class UsersService {
   public async delete(email: string): Promise<void> {
     const user = await this.userRepository.findOne({ email });
     await this.userRepository.remove(user);
+  }
+
+  public async updatePin(userInformation: UpdatePinDto): Promise<void> {
+    const email = userInformation.email;
+    const user = await this.userRepository.findOne({ email });
+    user.pin = userInformation.pin;
+    await this.userRepository.save(user);
   }
 }

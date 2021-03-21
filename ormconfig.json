@@ -6,7 +6,7 @@
   "password": "sa",
   "database": "VaultIoT",
   "entities": ["dist/**/*.entity{.ts,.js}"],
-  "synchronize": true,
+  "synchronize": false,
   "migrationsTableName": "migration_history",
   "migrations": ["dist/database/migrations/*.js"],
   "cli": {
