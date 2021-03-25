@@ -6,8 +6,9 @@ import { AppService } from './app.service';
 import { AuthModule } from './auth/auth.module';
 import { UsersModule } from './users/users.module';
 import { AppointmentController } from './appointment/controller/appointment.controller';
-import { Appointment } from './appointment/entities/appointment.entity';
 import { AppointmentModule } from './appointment/appointment.module';
+import { ClientsModule, Transport } from '@nestjs/microservices';
+import { mqttConfig } from './mqtt.config';
 
 @Module({
   imports: [
@@ -24,7 +25,18 @@ import { AppointmentModule } from './appointment/appointment.module';
       synchronize: true,
       entities: ['dist/**/*.entity.{js,ts}'],
       logging: true,
-    })
+    }),
+    ClientsModule.register([
+      {
+        name: 'VAULT_SERVICE',
+        transport: Transport.MQTT,
+        options: {
+          username: mqttConfig.username,
+          password: mqttConfig.password,
+          url: mqttConfig.url,
+        },
+      }
+    ])
   ],
   controllers: [AppController, AppointmentController],
   providers: [AppService],
