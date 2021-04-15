@@ -20,22 +20,6 @@ export class UserController {
     public async updateUser(@Body() userToUpdate: UpdateUserDto) {
         return this.userService.updateOrDeactivate(userToUpdate);
     }
-
-    @Roles(UserRole.Manager)
-    @UseGuards(JwtAuthGuard, RoleGuard)
-    @Post('open-door')
-    public async openDoor(@Body() userInfo: UserInfoDoorDto) {
-        return this.client.emit<string>('opendoor', userInfo.email);
-    }
-
-    @Roles(UserRole.PowerUser, UserRole.Manager)
-    @UseGuards(JwtAuthGuard, RoleGuard)
-    @Post("upload-face-image")
-    @UseInterceptors(FileInterceptor("photo", { dest: "./uploads" }))
-    uploadSingle(@UploadedFile() file, @Body() body) {
-        return this.userService.setImageToUser(file, body);
-    }
-
     
     @Roles(UserRole.PowerUser.toString(), UserRole.Manager.toString())
     @UseGuards(JwtAuthGuard, RoleGuard)

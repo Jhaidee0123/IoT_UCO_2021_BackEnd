@@ -30,11 +30,10 @@ export class UsersService {
     );
   }
 
-  public async setImageToUser(file: any, body: any): Promise<void> {
-    const email = body.email;
+  public async setImageToUser(fileRoute: string, email: string): Promise<void> {
     const userToUpdate = await this.userRepository.findOne({ email });
     const user = userToUpdate;
-    user.imageRoute = file.destination + '/' + file.filename;
+    user.imageRoute = fileRoute;
     const editedUser = Object.assign(userToUpdate, user);
     await this.userRepository.save(editedUser);
   }

@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { HttpModule, Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Connection } from 'typeorm';
 import { AppController } from './app.controller';
@@ -11,6 +11,8 @@ import { ClientsModule, Transport } from '@nestjs/microservices';
 import { mqttConfig } from './mqtt.config';
 import { AuthController } from './auth/controllers';
 import { UserController } from './users/controllers';
+import { AzureStorageModule } from '@nestjs/azure-storage';
+import { azureConfig } from './azureConfig';
 
 @Module({
   imports: [
@@ -38,7 +40,18 @@ import { UserController } from './users/controllers';
           url: mqttConfig.url,
         },
       }
-    ])
+    ]),
+    AzureStorageModule.withConfig({
+      sasKey: azureConfig.AZURE_STORAGE_SAS_KEY,
+      accountName: azureConfig.AZURE_STORAGE_ACCOUNT,
+      containerName: azureConfig.CONTAINER_NAME,
+    }),
+    HttpModule.registerAsync({
+      useFactory: () => ({
+        timeout: 50000,
+        maxRedirects: 5
+      }) 
+    })
   ],
   controllers: [AppController, AppointmentController, AuthController, UserController],
   providers: [AppService],

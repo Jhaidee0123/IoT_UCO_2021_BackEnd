@@ -6,6 +6,8 @@ import { UserController } from './controllers/user.controller';
 import { ClientProxyFactory, ClientsModule, Transport } from '@nestjs/microservices';
 import { mqttConfig } from 'src/mqtt.config';
 import { AppModule } from 'src/app.module';
+import { AzureStorageModule } from '@nestjs/azure-storage';
+import { azureConfig } from 'src/azureConfig';
 
 @Module({
   imports: [TypeOrmModule.forFeature([User])],
