@@ -37,4 +37,7 @@ export class User {
     default: UserRole.PowerUser,
   })
   public role: UserRole;
+
+  @Column({ nullable: true })
+  public imageRoute: string;
 }

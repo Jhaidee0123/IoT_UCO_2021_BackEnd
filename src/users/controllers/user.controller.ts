@@ -1,20 +1,39 @@
-import { Body, Controller, Delete, Get, Param, Put, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Inject, Param, Post, Put, UseGuards, UploadedFile, UseInterceptors } from '@nestjs/common';
 import { Roles } from 'src/auth/decorators/role.decorator';
 import { JwtAuthGuard } from 'src/auth/guards';
 import { RoleGuard } from 'src/auth/guards/role.guard';
 import { UpdatePinDto, UpdateUserDto } from '../dto';
 import { UserRole } from '../entities/user-role.enum';
 import { UsersService } from '../services';
+import { ClientProxy } from '@nestjs/microservices';
+import { UserInfoDoorDto } from 'src/appointment/dto';
+import { FileInterceptor } from "@nestjs/platform-express";
 
 @Controller('user')
 export class UserController {
-    constructor(private userService: UsersService) { }
+    constructor(private userService: UsersService,
+                @Inject('VAULT_SERVICE') private client: ClientProxy) { }
 
     @Roles(UserRole.PowerUser)
     @UseGuards(JwtAuthGuard, RoleGuard)
     @Put('update-user')
     public async updateUser(@Body() userToUpdate: UpdateUserDto) {
         return this.userService.updateOrDeactivate(userToUpdate);
+    }
+
+    @Roles(UserRole.Manager)
+    @UseGuards(JwtAuthGuard, RoleGuard)
+    @Post('open-door')
+    public async openDoor(@Body() userInfo: UserInfoDoorDto) {
+        return this.client.emit<string>('opendoor', userInfo.email);
+    }
+
+    @Roles(UserRole.PowerUser, UserRole.Manager)
+    @UseGuards(JwtAuthGuard, RoleGuard)
+    @Post("upload-face-image")
+    @UseInterceptors(FileInterceptor("photo", { dest: "./uploads" }))
+    uploadSingle(@UploadedFile() file, @Body() body) {
+        return this.userService.setImageToUser(file, body);
     }
 
     

@@ -25,9 +25,18 @@ export class UsersService {
       return user;
     }
     throw new HttpException(
-      'User with this email does not exist.',
+      'No existe un usuario con este email',
       HttpStatus.NOT_FOUND,
     );
+  }
+
+  public async setImageToUser(file: any, body: any): Promise<void> {
+    const email = body.email;
+    const userToUpdate = await this.userRepository.findOne({ email });
+    const user = userToUpdate;
+    user.imageRoute = file.destination + '/' + file.filename;
+    const editedUser = Object.assign(userToUpdate, user);
+    await this.userRepository.save(editedUser);
   }
 
   public async create(user: CreateUserDto): Promise<void> {

@@ -3,10 +3,27 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { User } from './entities';
 import { UsersService } from './services';
 import { UserController } from './controllers/user.controller';
+import { ClientProxyFactory, ClientsModule, Transport } from '@nestjs/microservices';
+import { mqttConfig } from 'src/mqtt.config';
+import { AppModule } from 'src/app.module';
 
 @Module({
   imports: [TypeOrmModule.forFeature([User])],
-  providers: [UsersService],
+  providers: [UsersService,
+  {
+    provide: 'VAULT_SERVICE',
+    useFactory: () => {
+      return ClientProxyFactory.create({
+        transport: Transport.MQTT,
+        options: {
+          username: mqttConfig.username,
+          password: mqttConfig.password,
+          url: mqttConfig.url,
+        }
+      })
+    },
+    inject: [UsersService]
+  }],
   exports: [UsersService],
   controllers: [UserController]
 })

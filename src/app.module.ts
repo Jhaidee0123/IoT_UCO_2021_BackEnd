@@ -9,6 +9,8 @@ import { AppointmentController } from './appointment/controller/appointment.cont
 import { AppointmentModule } from './appointment/appointment.module';
 import { ClientsModule, Transport } from '@nestjs/microservices';
 import { mqttConfig } from './mqtt.config';
+import { AuthController } from './auth/controllers';
+import { UserController } from './users/controllers';
 
 @Module({
   imports: [
@@ -38,7 +40,7 @@ import { mqttConfig } from './mqtt.config';
       }
     ])
   ],
-  controllers: [AppController, AppointmentController],
+  controllers: [AppController, AppointmentController, AuthController, UserController],
   providers: [AppService],
 })
 export class AppModule {
