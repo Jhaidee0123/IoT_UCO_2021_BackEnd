@@ -8,12 +8,15 @@ import { UserRole } from './users/entities/user-role.enum';
 import { UsersService } from './users/services';
 import { map } from 'rxjs/operators'
 import { ClientProxy } from '@nestjs/microservices';
+import { AppointmentService } from './appointment/services';
+import { ValidateAppointmentDto } from './appointment/dto/validate-appointment.dto';
 
 @Controller()
 export class AppController {
     constructor(private readonly azure: AzureStorageService,
                 private readonly userService: UsersService,
                 private readonly httpService: HttpService,
+                private readonly appointmentService: AppointmentService,
                 @Inject('VAULT_SERVICE') private client: ClientProxy) {
        
         
@@ -30,8 +33,8 @@ export class AppController {
         }
         const imageRoute = await this.azure.upload(file);
         this.userService.setImageToUser(imageRoute, req.user.email);
-        this.httpService.post('http://localhost:5000/WeatherForecast/train', { email: req.user.email, registerUserPhotoUrl: imageRoute })
-            .toPromise().then((res) => console.log(res))
+        this.httpService.post('http://localhost:5000/Face/train', { email: req.user.email, registerUserPhotoUrl: imageRoute })
+            .toPromise().then()
             .catch((err) => console.log(err));
         return;
     }
@@ -44,21 +47,40 @@ export class AppController {
         const imageRoute = await this.azure.upload(file);
         const user = await this.userService.findByEmail(req.user.email);
         if (user.pin != body.pin) {
-            console.log('entro por aca');
             throw new HttpException(
-                'PIN Invalido',
+                'PIN Inválido',
                 HttpStatus.UNAUTHORIZED,
               );
         }
-        return await this.httpService.post('http://localhost:5000/WeatherForecast/validate-face', { url: imageRoute })
+        await this.httpService.post('http://localhost:5000/Face/validate-face', { url: imageRoute })
             .pipe(
-                map(response => {
+                map(async response => {
                     if (response.data) {
-                        this.client.emit<string>('opendoor', req.user.email);
-                        return response.data;
+                        const appointmentDto: ValidateAppointmentDto = {
+                            date: new Date(),
+                            emailUser: req.user.email
+                        }
+                        const validation = await this.appointmentService.validateAppointmentWithDate(appointmentDto);
+                        console.log('la validacion es: ' + validation);
+                        if (validation) {
+                            this.client.emit<string>('opendoor', req.user.email);
+                            return response.data;
+                        } 
+                        throw new HttpException(
+                            'No hay ninguna cita activa',
+                            HttpStatus.NOT_FOUND,
+                            );
                     } 
                 })
-            );
+            ).toPromise().catch((err) => {
+                if (err.response.status === 401) {
+                    throw new HttpException(
+                        err.response.data,
+                        HttpStatus.UNAUTHORIZED,
+                      );
+                }
+            });
+        return;
     }
 
     

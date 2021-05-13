@@ -3,6 +3,7 @@ import { InjectRepository } from "@nestjs/typeorm";
 import { UsersService } from "src/users/services";
 import { Repository } from "typeorm";
 import { CreateAppointmentDto, UpdateAppointmentDto } from "../dto";
+import { ValidateAppointmentDto } from "../dto/validate-appointment.dto";
 import { Appointment } from "../entities/appointment.entity";
 import { AppointmentStatus } from "../entities/appointment.enum";
 
@@ -46,5 +47,22 @@ export class AppointmentService {
   public async delete(id: string): Promise<void> {
     const appointment = await this.appointmentRepository.findOne({ id });
     await this.appointmentRepository.remove(appointment);
+  }
+
+  public async validateAppointmentWithDate(validateAppointmentDto: ValidateAppointmentDto): Promise<boolean> {
+    const user = await this.usersService.findByEmail(validateAppointmentDto.emailUser);
+    const appoinment = await this.appointmentRepository.findOne({ user })
+    const initialRange = validateAppointmentDto.date;
+      initialRange.setHours(-1);
+      console.log(initialRange + ' inial range');
+      const finalRange = validateAppointmentDto.date;
+      finalRange.setHours(1);
+      console.log(initialRange + ' final range');
+    if (appoinment) {
+      if (validateAppointmentDto.date < finalRange && validateAppointmentDto.date >= initialRange) {
+        return true;
+      }
+    }
+    return false;
   }
 }
