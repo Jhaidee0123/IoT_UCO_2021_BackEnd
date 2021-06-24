@@ -1,6 +1,8 @@
-import { Injectable } from "@nestjs/common";
+import { HttpException, HttpStatus, Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
+import * as moment from 'moment';
 import { UsersService } from "src/users/services";
+import { VaultService } from "src/vault/services/vault.service";
 import { Repository } from "typeorm";
 import { CreateAppointmentDto, UpdateAppointmentDto } from "../dto";
 import { ValidateAppointmentDto } from "../dto/validate-appointment.dto";
@@ -11,7 +13,8 @@ import { AppointmentStatus } from "../entities/appointment.enum";
 export class AppointmentService {
   constructor(
     @InjectRepository(Appointment) private appointmentRepository: Repository<Appointment>,
-    private usersService: UsersService
+    private usersService: UsersService,
+    private vaultService: VaultService
   ) {}
 
   public async create(appointment: CreateAppointmentDto): Promise<void> {
@@ -22,7 +25,7 @@ export class AppointmentService {
   }
 
   public async getAll(): Promise<Appointment[]> {
-    return await this.appointmentRepository.find();
+    return await this.appointmentRepository.find({ relations: ['user'], where: [{ status: AppointmentStatus.Pending }, { status: AppointmentStatus.Accepted }]});
   }
 
   public async update(appointment: UpdateAppointmentDto): Promise<void> {
@@ -44,6 +47,12 @@ export class AppointmentService {
     await this.appointmentRepository.save(appointment);
   }
 
+  public async completeAppointment(id: string): Promise<void> {
+    const appointment = await this.appointmentRepository.findOne({ id });
+    appointment.status = AppointmentStatus.Completed;
+    await this.appointmentRepository.save(appointment);
+  }
+
   public async delete(id: string): Promise<void> {
     const appointment = await this.appointmentRepository.findOne({ id });
     await this.appointmentRepository.remove(appointment);
@@ -51,16 +60,33 @@ export class AppointmentService {
 
   public async validateAppointmentWithDate(validateAppointmentDto: ValidateAppointmentDto): Promise<boolean> {
     const user = await this.usersService.findByEmail(validateAppointmentDto.emailUser);
-    const appoinment = await this.appointmentRepository.findOne({ user })
+    const vaultState = await this.vaultService.getVault();
+    if (!vaultState[0].isOpen) {
+      throw new HttpException(
+        'La boveda no se encuentra aún abierta. Contacte con el manager',
+        HttpStatus.BAD_REQUEST,
+        );
+    }
+    const appoinment = await this.appointmentRepository.findOne({ where: { status: AppointmentStatus.Accepted, user: user } })
+    if (appoinment === undefined) {
+      throw new HttpException(
+        'No hay ninguna cita activa',
+        HttpStatus.NOT_FOUND,
+        );
+    }
+    
     const initialRange = validateAppointmentDto.date;
-      initialRange.setHours(-1);
-      console.log(initialRange + ' inial range');
-      const finalRange = validateAppointmentDto.date;
-      finalRange.setHours(1);
-      console.log(initialRange + ' final range');
+    const finalRange = moment(initialRange).add(1, 'hours').toDate();
     if (appoinment) {
-      if (validateAppointmentDto.date < finalRange && validateAppointmentDto.date >= initialRange) {
+      if (moment(initialRange).toDate() > appoinment.date && appoinment.date < finalRange) {
         return true;
+      }
+      else {
+        moment.locale('es');
+        throw new HttpException(
+          'No se encuentra en la hora solicitada. Su cita es en ' +  moment(appoinment.date).format('MMMM Do YYYY, h:mm:ss a'),
+          HttpStatus.BAD_REQUEST,
+          );
       }
     }
     return false;

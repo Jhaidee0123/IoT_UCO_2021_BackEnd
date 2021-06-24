@@ -51,4 +51,11 @@ export class AppointmentController {
     public async accept(@Param('id') id: string) {
         return this.appointmentService.acceptAppointment(id);
     }
+
+    @Roles(UserRole.Manager)
+    @UseGuards(JwtAuthGuard, RoleGuard)
+    @Put('complete-appointment/:id')
+    public async complete(@Param('id') id: string) {
+        return this.appointmentService.completeAppointment(id);
+    }
 }

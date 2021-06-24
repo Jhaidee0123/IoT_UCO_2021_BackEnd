@@ -30,7 +30,7 @@ export class AuthController {
   public async registerPowerUser(@Body(new ValidationPipe()) registrationData: RegisterDto) {
     return this.authService.register({
       ...registrationData,
-      role: UserRole.PowerUser,
+      role: UserRole.PowerUser
     });
   }
 

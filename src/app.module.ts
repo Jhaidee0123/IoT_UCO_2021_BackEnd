@@ -13,11 +13,14 @@ import { AuthController } from './auth/controllers';
 import { UserController } from './users/controllers';
 import { AzureStorageModule } from '@nestjs/azure-storage';
 import { azureConfig } from './azureConfig';
+import { VaultModule } from './vault/vault.module';
+import { VaultController } from './vault/controllers/vault.controller';
 
 @Module({
   imports: [
     AuthModule,
     UsersModule,
+    VaultModule,
     AppointmentModule,
     TypeOrmModule.forRoot({
       type: 'postgres',
@@ -51,9 +54,10 @@ import { azureConfig } from './azureConfig';
         timeout: 50000,
         maxRedirects: 5
       }) 
-    })
+    }),
+    VaultModule
   ],
-  controllers: [AppController, AppointmentController, AuthController, UserController],
+  controllers: [AppController, AppointmentController, AuthController, UserController, VaultController],
   providers: [AppService],
 })
 export class AppModule {

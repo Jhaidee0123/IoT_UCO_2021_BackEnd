@@ -22,7 +22,7 @@ export class AuthService {
     } catch (error) {
       if (error?.code === PostgresErrorCode.UniqueViolation) {
         throw new HttpException(
-          'User with that email address already exists.',
+          'Ya existe un usuario con este correo.',
           HttpStatus.CONFLICT,
         );
       }
@@ -40,7 +40,7 @@ export class AuthService {
         const passwordMatch = await compare(password, user.password);
         if (!passwordMatch) {
           throw new HttpException(
-            'Wrong credentials provided.',
+            'Error de credenciales.',
             HttpStatus.BAD_REQUEST,
           );
         }
